@@ -5,6 +5,9 @@
     <ClCompile Include="..\..\..\Src\FT_CoPro_Cmds.c" />
     <ClCompile Include="..\..\..\Src\FT_Emu_main.cpp" />
     <ClCompile Include="..\..\..\Src\FT_Gpu_Hal.c" />
+    <ClCompile Include="..\..\..\Src\Kirby.c" />
+    <ClCompile Include="..\..\..\Src\Test.c" />
+    <ClCompile Include="..\..\..\Src\DebugPrint.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Hdr\FT_CoPro_Cmds.h" />
@@ -16,5 +19,9 @@
     <ClInclude Include="..\..\..\Hdr\MSVC_Emulator\FT_DataTypes.h" />
     <ClInclude Include="..\..\..\Hdr\MSVC_Emulator\FT_Emulator.h" />
     <ClInclude Include="..\..\..\Hdr\MSVC_Emulator\FT_EmulatorMain.h" />
+    <ClInclude Include="..\..\..\Hdr\Bitmap.h" />
+    <ClInclude Include="..\..\..\Hdr\DebugPrint.h" />
+    <ClInclude Include="..\..\..\Hdr\Kirby.h" />
+    <ClInclude Include="..\..\..\Hdr\Test.h" />
   </ItemGroup>
 </Project>

@@ -373,5 +373,6 @@ ft_uint8_t    Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *host, ft_uint32_t hrdcm
 ft_uint8_t    Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *host, ft_uint32_t hwraddr, const ft_uint8_t * wrbufptr, ft_uint32_t bytestowr);
 #endif
 
+ft_uint32_t Ft_GetErrorCounter(void);
 
 #endif  /* FT_GPU_HAL_H */

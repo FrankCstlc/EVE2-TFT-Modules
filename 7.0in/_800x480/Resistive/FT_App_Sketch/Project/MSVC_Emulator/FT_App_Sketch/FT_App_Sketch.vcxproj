@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -11,41 +11,49 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Src\DebugPrint.c" />
     <ClCompile Include="..\..\..\Src\FT_App_Sketch.c" />
     <ClCompile Include="..\..\..\Src\FT_CoPro_Cmds.c" />
     <ClCompile Include="..\..\..\Src\FT_Emu_main.cpp" />
     <ClCompile Include="..\..\..\Src\FT_Gpu_Hal.c" />
+    <ClCompile Include="..\..\..\Src\Kirby.c" />
+    <ClCompile Include="..\..\..\Src\Test.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Hdr\Bitmap.h" />
+    <ClInclude Include="..\..\..\Hdr\DebugPrint.h" />
     <ClInclude Include="..\..\..\Hdr\FT_CoPro_Cmds.h" />
     <ClInclude Include="..\..\..\Hdr\FT_Font_Table.h" />
     <ClInclude Include="..\..\..\Hdr\FT_Gpu.h" />
     <ClInclude Include="..\..\..\Hdr\FT_Gpu_Hal.h" />
     <ClInclude Include="..\..\..\Hdr\FT_Hal_Utils.h" />
+    <ClInclude Include="..\..\..\Hdr\Kirby.h" />
     <ClInclude Include="..\..\..\Hdr\MSVC_Emulator\FT_Platform.h" />
     <ClInclude Include="..\..\..\Hdr\MSVC_Emulator\FT_DataTypes.h" />
     <ClInclude Include="..\..\..\Hdr\MSVC_Emulator\FT_Emulator.h" />
     <ClInclude Include="..\..\..\Hdr\MSVC_Emulator\FT_EmulatorMain.h" />
+    <ClInclude Include="..\..\..\Hdr\Test.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9B216CCB-465C-4DCC-8A71-BFB41D59DDCC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SampleApp</RootNamespace>
     <ProjectName>FT_App_Sketch</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

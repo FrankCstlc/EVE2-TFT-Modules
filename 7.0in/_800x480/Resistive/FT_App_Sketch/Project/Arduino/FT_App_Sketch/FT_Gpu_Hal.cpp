@@ -30,6 +30,8 @@ Revision History:
 
 #include "FT_Platform.h"
 
+static ft_uint32_t _errorCounter = 0;
+
 /* API to initialize the SPI interface */
 ft_bool_t  Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 {
@@ -404,18 +406,69 @@ ft_void_t Ft_Gpu_Hal_Wr8(Ft_Gpu_Hal_Context_t *host,ft_uint32_t addr, ft_uint8_t
 	Ft_Gpu_Hal_StartTransfer(host,FT_GPU_WRITE,addr);
 	Ft_Gpu_Hal_Transfer8(host,v);
 	Ft_Gpu_Hal_EndTransfer(host);
+  
+	if (addr == REG_DLSWAP)
+	{
+		return;
+	}
+	Ft_Gpu_Hal_StartTransfer(host, FT_GPU_READ, addr);
+	ft_uint8_t retVal = Ft_Gpu_Hal_Transfer8(host, 0);
+	Ft_Gpu_Hal_EndTransfer(host);
+
+#ifndef DEBUG_SHOW_ALL_BYTES
+	if (v != retVal)
+#endif
+	{
+		DebugPrint("Wr8, 0x%06X, %u, 0x%02X, 0x%02X, %s\n",
+			addr, 0,
+			v, retVal, v == retVal ? "Ok" : "Error");
+	}
+	if (v != retVal)
+	{
+		_errorCounter++;
+	}
 }
 ft_void_t Ft_Gpu_Hal_Wr16(Ft_Gpu_Hal_Context_t *host,ft_uint32_t addr, ft_uint16_t v)
 {
 	Ft_Gpu_Hal_StartTransfer(host,FT_GPU_WRITE,addr);
 	Ft_Gpu_Hal_Transfer16(host,v);
 	Ft_Gpu_Hal_EndTransfer(host);
+  Ft_Gpu_Hal_StartTransfer(host, FT_GPU_READ, addr);
+  ft_uint16_t retVal = Ft_Gpu_Hal_Transfer16(host, 0);
+  Ft_Gpu_Hal_EndTransfer(host);
+#ifndef DEBUG_SHOW_ALL_BYTES
+  if (v != retVal)
+#endif
+  {
+    DebugPrint("Wr16, 0x%06X, %u, 0x%04X, 0x%04X, %s\n",
+      addr, 0,
+      v, retVal, v == retVal ? "Ok" : "Error");
+  }
+  if (v != retVal)
+  {
+    _errorCounter++;
+  }
 }
 ft_void_t Ft_Gpu_Hal_Wr32(Ft_Gpu_Hal_Context_t *host,ft_uint32_t addr, ft_uint32_t v)
 {
 	Ft_Gpu_Hal_StartTransfer(host,FT_GPU_WRITE,addr);
 	Ft_Gpu_Hal_Transfer32(host,v);
 	Ft_Gpu_Hal_EndTransfer(host);
+  Ft_Gpu_Hal_StartTransfer(host, FT_GPU_READ, addr);
+  ft_uint32_t retVal = Ft_Gpu_Hal_Transfer32(host, 0);
+  Ft_Gpu_Hal_EndTransfer(host);
+#ifndef DEBUG_SHOW_ALL_BYTES
+  if (v != retVal)
+#endif
+  {
+    DebugPrint("Wr32, 0x%06X, %u, 0x%08X, 0x%08X, %s\n",
+      addr, 0,
+      v, retVal, v == retVal ? "Ok" : "Error");
+  }
+  if (v != retVal)
+  {
+    _errorCounter++;
+  }
 }
 
 ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *host,ft_uint8_t cmd)
@@ -573,7 +626,11 @@ ft_uint16_t Ft_Gpu_Cmdfifo_Freespace(Ft_Gpu_Hal_Context_t *host)
 
 ft_void_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *host,ft_uint8_t *buffer,ft_uint32_t count)
 {
-	ft_int32_t length =0, SizeTransfered = 0, availablefreesize;   
+	ft_int32_t length =0, SizeTransfered = 0, availablefreesize;
+	ft_uint8_t* _buffer;
+	ft_uint32_t _length;
+	ft_uint32_t _remainingBytes;
+	ft_uint32_t _readCount = 0; 
 
 #define MAX_CMD_FIFO_TRANSFER   Ft_Gpu_Cmdfifo_Freespace(host)  
 	do {                
@@ -584,21 +641,32 @@ ft_void_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *host,ft_uint8_t *buffer,ft_u
 		{
 		    length = availablefreesize;
 		}
-      	        Ft_Gpu_Hal_CheckCmdBuffer(host,length);
+    Ft_Gpu_Hal_CheckCmdBuffer(host,length);
+                
+		_remainingBytes = 0;
+		if (host->ft_cmd_fifo_wp + length > 4096)
+		{
+			_remainingBytes = host->ft_cmd_fifo_wp + length  - 4096;
+			length = 4096 - host->ft_cmd_fifo_wp;
+		}
 
-                Ft_Gpu_Hal_StartCmdTransfer(host,FT_GPU_WRITE,length);
+    Ft_Gpu_Hal_StartCmdTransfer(host,FT_GPU_WRITE,length);
+
 #ifdef FT900_PLATFORM
         spi_writen(SPIM,buffer,length);
         buffer += length;
 #endif
 #if defined(ARDUINO_PLATFORM_SPI) || defined(MSVC_FT800EMU)
-                SizeTransfered = 0;
-		while (length--) {
-                    Ft_Gpu_Hal_Transfer8(host,*buffer);
-		    buffer++;
-                    SizeTransfered ++;
-		}
-                length = SizeTransfered;
+    SizeTransfered = 0;
+    _buffer = buffer;
+    _length = length;
+    while (_length--)
+    {
+      Ft_Gpu_Hal_Transfer8(host,*_buffer);
+      _buffer++;
+      SizeTransfered++;
+    }
+      //length = SizeTransfered;
 #endif
 
 #ifdef MSVC_PLATFORM_SPI
@@ -609,7 +677,38 @@ ft_void_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *host,ft_uint8_t *buffer,ft_u
 		}
 #endif
 
-		Ft_Gpu_Hal_EndTransfer(host);
+#if defined(ARDUINO_PLATFORM_SPI) || defined(MSVC_FT800EMU)
+    Ft_Gpu_Hal_StartCmdTransfer(host, FT_GPU_READ, length);
+    _buffer = buffer;
+    _length = length;
+    while (_length--)
+    {
+      uint8_t retVal = Ft_Gpu_Hal_Transfer8(host, 0);
+#ifndef DEBUG_SHOW_ALL_BYTES
+      if (*_buffer != retVal)
+#endif
+      {
+        DebugPrint("WrCmdBuf, %u, %u, 0x%02X, 0x%02X, %s\n",
+          host->ft_cmd_fifo_wp + _buffer - buffer, _readCount,
+          *_buffer, retVal, *_buffer == retVal ? "Ok" : "Error");
+      }
+      if (*_buffer != retVal)
+      {
+        _errorCounter++;
+      }
+      _buffer++;
+      _readCount++;
+    }
+    Ft_Gpu_Hal_EndTransfer(host);
+    length = SizeTransfered;
+    buffer += SizeTransfered;
+#endif
+		if (_remainingBytes > 0) {
+			Ft_Gpu_Hal_ResetCmdFifo(host);
+			count -= length;
+			continue;
+		}
+
 		Ft_Gpu_Hal_Updatecmdfifo(host,length);
 
 		Ft_Gpu_Hal_WaitCmdfifo_empty(host);
@@ -817,7 +916,7 @@ ft_void_t Ft_Gpu_Hal_Powercycle(Ft_Gpu_Hal_Context_t *host, ft_bool_t up)
 }
 ft_void_t Ft_Gpu_Hal_WrMemFromFlash(Ft_Gpu_Hal_Context_t *host,ft_uint32_t addr,const ft_prog_uchar8_t *buffer, ft_uint32_t length)
 {
-	ft_uint32_t SizeTransfered = 0;      
+	ft_uint32_t SizeTransfered = 0;
 
 	Ft_Gpu_Hal_StartTransfer(host,FT_GPU_WRITE,addr);
 
@@ -840,7 +939,10 @@ ft_void_t Ft_Gpu_Hal_WrMemFromFlash(Ft_Gpu_Hal_Context_t *host,ft_uint32_t addr,
 
 ft_void_t Ft_Gpu_Hal_WrMem(Ft_Gpu_Hal_Context_t *host,ft_uint32_t addr,const ft_uint8_t *buffer, ft_uint32_t length)
 {
-	ft_uint32_t SizeTransfered = 0;      
+	ft_uint32_t SizeTransfered = 0;
+	ft_uint8_t* _buffer;
+	ft_uint32_t _length;
+	ft_uint32_t _readCount = 0;     
 
 	Ft_Gpu_Hal_StartTransfer(host,FT_GPU_WRITE,addr);
 #ifdef FT900_PLATFORM
@@ -849,10 +951,13 @@ ft_void_t Ft_Gpu_Hal_WrMem(Ft_Gpu_Hal_Context_t *host,ft_uint32_t addr,const ft_
 
 #endif
 #if defined(ARDUINO_PLATFORM_SPI) || defined(MSVC_FT800EMU)
-	while (length--) {
-            Ft_Gpu_Hal_Transfer8(host,*buffer);
-	    buffer++;
-	}
+  _buffer = buffer;
+  _length = length;
+  while (_length--)
+  {
+    Ft_Gpu_Hal_Transfer8(host,*_buffer);
+    _buffer++;
+  }
 #endif
 
 #ifdef MSVC_PLATFORM_SPI
@@ -860,9 +965,30 @@ ft_void_t Ft_Gpu_Hal_WrMem(Ft_Gpu_Hal_Context_t *host,ft_uint32_t addr,const ft_
 	    SPI_Write((FT_HANDLE)host->hal_handle,buffer,length,&SizeTransfered,SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 	}
 #endif
-
-
-	Ft_Gpu_Hal_EndTransfer(host);
+#if defined(ARDUINO_PLATFORM_SPI) || defined(MSVC_FT800EMU)
+  Ft_Gpu_Hal_StartTransfer(host, FT_GPU_READ, addr);
+  _buffer = buffer;
+  _length = length;
+  while (_length--)
+  {
+    uint8_t retVal = Ft_Gpu_Hal_Transfer8(host, 0);
+#ifndef DEBUG_SHOW_ALL_BYTES
+    if (*_buffer != retVal)
+#endif
+    {
+      DebugPrint("WrMem, 0x%06X, %u, 0x%02X, 0x%02X, %s\n",
+        addr + _buffer - buffer, _readCount,
+        *_buffer, retVal, *_buffer == retVal ? "Ok" : "Error");
+    }
+    if (*_buffer != retVal)
+    {
+      _errorCounter++;
+    }
+    _buffer++;
+    _readCount++;
+  }
+  Ft_Gpu_Hal_EndTransfer(host);
+#endif
 }
 
 
@@ -1236,4 +1362,7 @@ ft_int32_t Ft_Gpu_ClockTrimming(Ft_Gpu_Hal_Context_t *host,ft_int32_t LowFreq)
    return f;
 }
 
-
+ft_uint32_t Ft_GetErrorCounter(void)
+{
+	return _errorCounter;
+}

@@ -156,12 +156,16 @@ Revision History:
 #include "FT_Gpu.h"
 #include "FT_CoPro_Cmds.h"
 #include "FT_Hal_Utils.h"
+#include "Test.h"
+#include "DebugPrint.h"
+
 #define BUFFER_OPTIMIZATION
 
 
 #define FT800_SEL_PIN   0
 #define FT800_PD_N      7
 
+#define DEBUG_SHOW_ALL_BYTES
 
 #endif /*_FT_PLATFORM_H_*/
 /* Nothing beyond this*/

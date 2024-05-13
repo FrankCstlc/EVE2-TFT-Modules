@@ -296,4 +296,6 @@ ft_void_t Ft_Gpu_81X_ResetRemoval(Ft_Gpu_Hal_Context_t *host);
 ft_uint32_t Ft_Gpu_CurrentFrequency(Ft_Gpu_Hal_Context_t *host);
 ft_int32_t Ft_Gpu_ClockTrimming(Ft_Gpu_Hal_Context_t *host,ft_int32_t LowFreq);
 
+ft_uint32_t Ft_GetErrorCounter(void);
+
 #endif  /* FT_GPU_HAL_H */

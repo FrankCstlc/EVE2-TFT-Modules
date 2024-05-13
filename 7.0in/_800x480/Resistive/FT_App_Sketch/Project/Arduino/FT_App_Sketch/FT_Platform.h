@@ -200,11 +200,13 @@ Revision History:
 #include "FT_Gpu.h"
 #include "FT_CoPro_Cmds.h"
 #include "FT_Hal_Utils.h"
-
-
-
+#include "Test.h"
+#include "DebugPrint.h"
 
 #define FT800_SEL_PIN 							FT800_CS
+
+//#define DEBUG_SHOW_ALL_BYTES
+//#define ARDUINO_SERIAL_DEBUG
 
 #endif /*_FT_PLATFORM_H_*/
 /* Nothing beyond this*/
